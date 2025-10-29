@@ -5,12 +5,9 @@ FROM composer:2 AS build
 
 WORKDIR /app
 
-# Copy composer files and install PHP deps
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader
-
-# Copy full Laravel project
+# Copy full Laravel project and install PHP deps
 COPY . .
+RUN composer install --no-dev --optimize-autoloader
 
 # ============================
 # Production Stage: PHP + Nginx
@@ -40,4 +37,4 @@ RUN chown -R www-data:www-data /var/www/html \
 EXPOSE 8080
 
 # Start Nginx and PHP-FPM
-CMD service nginx start && php-fpm
+CMD ["sh", "-c", "nginx -g 'daemon off;' & php-fpm"]

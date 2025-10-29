@@ -1,44 +1,43 @@
 # ============================
-# 1. Base PHP Image
+# Build Stage: Install dependencies
 # ============================
-FROM php:8-fpm-alpine
+FROM composer:2 AS build
 
-# Set working directory
-WORKDIR /var/www/html
+WORKDIR /app
 
-# ============================
-# 2. System Dependencies
-# ============================
-RUN apt-get update && apt-get install -y \
-    git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
+# Copy composer files and install PHP deps
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader
 
-# ============================
-# 3. Install Composer
-# ============================
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# ============================
-# 4. Copy Application Code
-# ============================
+# Copy full Laravel project
 COPY . .
 
 # ============================
-# 5. Install PHP Dependencies
+# Production Stage: PHP + Nginx
 # ============================
-RUN composer install --no-dev --optimize-autoloader
+FROM php:8.2-fpm
 
-# ============================
-# 6. Set Permissions
-# ============================
-RUN chown -R www-data:www-data storage bootstrap/cache
+# Install Nginx and system packages
+RUN apt-get update && apt-get install -y \
+    nginx curl zip unzip git libzip-dev libpng-dev libonig-dev libxml2-dev \
+    && docker-php-ext-install pdo_mysql zip bcmath opcache \
+    && rm -rf /var/lib/apt/lists/*
 
-# ============================
-# 7. Expose Port
-# ============================
-EXPOSE 8000
+WORKDIR /var/www/html
 
-# ============================
-# 8. Start Laravel Server
-# ============================
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Copy Laravel app and vendor folder from build stage
+COPY --from=build /app /var/www/html
+
+# Copy custom Nginx config
+RUN rm /etc/nginx/sites-enabled/default
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Expose port for Render
+EXPOSE 8080
+
+# Start Nginx and PHP-FPM
+CMD service nginx start && php-fpm

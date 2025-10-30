@@ -1,7 +1,7 @@
-# ============================
-# Build Stage: Install dependencies
-# ============================
-FROM composer:2 AS build
+# =====================
+# Build Stage: Composer
+# =====================
+FROM composer:2 AS backend
 
 WORKDIR /app
 
@@ -9,9 +9,17 @@ WORKDIR /app
 COPY . .
 RUN composer install --no-dev --optimize-autoloader
 
-# ============================
+# =================
+# Build Stage: Node
+# =================
+FROM node:20 AS frontend
+
+RUN npm ci
+RUN npm run build
+
+# =============================
 # Production Stage: PHP + Nginx
-# ============================
+# =============================
 FROM php:8.2-fpm
 
 # Install Nginx and system packages
@@ -22,8 +30,8 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /var/www/html
 
-# Copy Laravel app and vendor folder from build stage
-COPY --from=build /app /var/www/html
+# Copy Laravel app from backend build
+COPY --from=backend /app /var/www/html
 
 # Copy custom Nginx config
 RUN rm /etc/nginx/sites-enabled/default

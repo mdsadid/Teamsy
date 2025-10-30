@@ -5,9 +5,12 @@ FROM composer:2 AS backend
 
 WORKDIR /app
 
-# Copy full Laravel project and install PHP deps
-COPY . .
+# Copy only composer files first for caching
+COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader
+
+# Then copy the rest of the app
+COPY . .
 
 # =================
 # Build Stage: Node
@@ -16,13 +19,14 @@ FROM node:20 AS frontend
 
 WORKDIR /app
 
-# Copy files from backend stage
-COPY --from=backend /app /app
-
-ENV VITE_ASSET_URL=https://teamsy.onrender.com
-
-# Install and build frontend assets
+# Copy only what's needed for npm first (for caching)
+COPY package*.json ./
 RUN npm ci
+
+# Copy the rest of the files (including resources, vite.config.js, etc.)
+COPY . .
+
+# Run Vite production build
 RUN npm run build
 
 # =============================
@@ -38,15 +42,17 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /var/www/html
 
-# Copy Laravel app (with vendor + built assets)
+# Copy Laravel app (with vendor)
 COPY --from=backend /app /var/www/html
+
+# Copy built Vite assets
 COPY --from=frontend /app/public/build /var/www/html/public/build
 
 # Copy custom Nginx config
 RUN rm /etc/nginx/sites-enabled/default
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Set proper permissions
+# Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 

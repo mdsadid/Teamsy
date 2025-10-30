@@ -5,12 +5,9 @@ FROM composer:2 AS backend
 
 WORKDIR /app
 
-# Copy only composer files first for caching
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader
-
-# Then copy the rest of the app
+# Copy full Laravel project and install PHP deps
 COPY . .
+RUN composer install --no-dev --optimize-autoloader
 
 # =================
 # Build Stage: Node
@@ -19,14 +16,11 @@ FROM node:20 AS frontend
 
 WORKDIR /app
 
-# Copy only what's needed for npm first (for caching)
-COPY package*.json ./
+# Copy files from backend stage
+COPY --from=backend /app /app
+
+# Install and build frontend assets
 RUN npm ci
-
-# Copy the rest of the files (including resources, vite.config.js, etc.)
-COPY . .
-
-# Run Vite production build
 RUN npm run build
 
 # =============================
@@ -42,17 +36,15 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /var/www/html
 
-# Copy Laravel app (with vendor)
+# Copy Laravel app (with vendor + built assets)
 COPY --from=backend /app /var/www/html
-
-# Copy built Vite assets
 COPY --from=frontend /app/public/build /var/www/html/public/build
 
 # Copy custom Nginx config
 RUN rm /etc/nginx/sites-enabled/default
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Set permissions
+# Set proper permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 

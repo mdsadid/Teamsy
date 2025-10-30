@@ -14,6 +14,12 @@ RUN composer install --no-dev --optimize-autoloader
 # =================
 FROM node:20 AS frontend
 
+WORKDIR /app
+
+# Copy files from backend stage
+COPY --from=backend /app /app
+
+# Install and build frontend assets
 RUN npm ci
 RUN npm run build
 
@@ -30,8 +36,9 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /var/www/html
 
-# Copy Laravel app from backend build
+# Copy Laravel app (with vendor + built assets)
 COPY --from=backend /app /var/www/html
+COPY --from=frontend /app/public/build /var/www/html/public/build
 
 # Copy custom Nginx config
 RUN rm /etc/nginx/sites-enabled/default

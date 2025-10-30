@@ -19,6 +19,8 @@ WORKDIR /app
 # Copy files from backend stage
 COPY --from=backend /app /app
 
+ENV VITE_ASSET_URL=https://teamsy.onrender.com
+
 # Install and build frontend assets
 RUN npm ci
 RUN npm run build

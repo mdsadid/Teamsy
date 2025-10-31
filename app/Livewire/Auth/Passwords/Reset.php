@@ -2,13 +2,15 @@
 
 namespace App\Livewire\Auth\Passwords;
 
-use App\Providers\RouteServiceProvider;
-use Livewire\Component;
-use Illuminate\Support\Str;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Contracts\Auth\PasswordBroker;
+use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
+use Livewire\Component;
 
 class Reset extends Component
 {
@@ -24,7 +26,7 @@ class Reset extends Component
     /** @var string */
     public $passwordConfirmation;
 
-    public function mount($token)
+    public function mount($token): void
     {
         $this->email = request()->query('email', '');
         $this->token = $token;
@@ -33,15 +35,15 @@ class Reset extends Component
     public function resetPassword()
     {
         $this->validate([
-            'token' => 'required',
-            'email' => 'required|email',
+            'token'    => 'required',
+            'email'    => 'required|email',
             'password' => 'required|min:8|same:passwordConfirmation',
         ]);
 
         $response = $this->broker()->reset(
             [
-                'token' => $this->token,
-                'email' => $this->email,
+                'token'    => $this->token,
+                'email'    => $this->email,
                 'password' => $this->password
             ],
             function ($user, $password) {
@@ -69,9 +71,9 @@ class Reset extends Component
     /**
      * Get the broker to be used during password reset.
      *
-     * @return \Illuminate\Contracts\Auth\PasswordBroker
+     * @return PasswordBroker
      */
-    public function broker()
+    public function broker(): PasswordBroker
     {
         return Password::broker();
     }
@@ -79,14 +81,14 @@ class Reset extends Component
     /**
      * Get the guard to be used during password reset.
      *
-     * @return \Illuminate\Contracts\Auth\StatefulGuard
+     * @return StatefulGuard
      */
-    protected function guard()
+    protected function guard(): StatefulGuard
     {
         return Auth::guard();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.auth.passwords.reset')->extends('layouts.auth');
     }

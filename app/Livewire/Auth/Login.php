@@ -3,6 +3,7 @@
 namespace App\Livewire\Auth;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 use Livewire\Component;
 
 class Login extends Component
@@ -17,11 +18,11 @@ class Login extends Component
     public $remember = false;
 
     protected $rules = [
-        'email' => ['required', 'email'],
+        'email'    => ['required', 'email'],
         'password' => ['required'],
     ];
 
-    public function authenticate()
+    public function authenticate(): void
     {
         $this->validate();
 
@@ -31,10 +32,10 @@ class Login extends Component
             return;
         }
 
-        return redirect()->intended(route('home'));
+        $this->redirectIntended(route('home'));
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.auth.login')->extends('layouts.auth');
     }

@@ -12,14 +12,14 @@
 
         <p class="mt-2 text-sm text-center text-gray-600 leading-5 max-w">
             Or
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline transition ease-in-out duration-150">
+            <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline transition ease-in-out duration-150">
                 sign out
             </a>
-
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                @csrf
-            </form>
         </p>
+
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+            @csrf
+        </form>
     </div>
 
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">

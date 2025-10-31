@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Auth;
 
-use App\Providers\RouteServiceProvider;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Auth\Events\Registered;
+use Illuminate\View\View;
 use Livewire\Component;
 
 class Register extends Component
@@ -23,17 +24,17 @@ class Register extends Component
     /** @var string */
     public $passwordConfirmation = '';
 
-    public function register()
+    public function register(): RedirectResponse
     {
         $this->validate([
-            'name' => ['required'],
-            'email' => ['required', 'email', 'unique:users'],
+            'name'     => ['required'],
+            'email'    => ['required', 'email', 'unique:users'],
             'password' => ['required', 'min:8', 'same:passwordConfirmation'],
         ]);
 
         $user = User::create([
-            'email' => $this->email,
-            'name' => $this->name,
+            'email'    => $this->email,
+            'name'     => $this->name,
             'password' => Hash::make($this->password),
         ]);
 
@@ -44,7 +45,7 @@ class Register extends Component
         return redirect()->intended(route('home'));
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.auth.register')->extends('layouts.auth');
     }

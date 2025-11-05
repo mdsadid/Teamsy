@@ -4,14 +4,16 @@ namespace App\Livewire\Auth;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Teamsy | Verify your email address')]
 class Verify extends Component
 {
     public function resend(): void
     {
         if (Auth::user()->hasVerifiedEmail()) {
-            redirect(route('home'));
+            $this->redirect(route('home'));
         }
 
         Auth::user()->sendEmailVerificationNotification();
@@ -23,6 +25,6 @@ class Verify extends Component
 
     public function render(): View
     {
-        return view('livewire.auth.verify')->extends('layouts.auth');
+        return view('livewire.auth.verify');
     }
 }

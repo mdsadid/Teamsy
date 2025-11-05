@@ -5,8 +5,10 @@ namespace App\Livewire\Auth\Passwords;
 use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Teamsy | Reset password')]
 class Email extends Component
 {
     /** @var string */
@@ -44,6 +46,6 @@ class Email extends Component
 
     public function render(): View
     {
-        return view('livewire.auth.passwords.email')->extends('layouts.auth');
+        return view('livewire.auth.passwords.email');
     }
 }

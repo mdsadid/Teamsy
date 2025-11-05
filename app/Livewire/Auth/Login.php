@@ -4,8 +4,10 @@ namespace App\Livewire\Auth;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Teamsy | Sign in to your account')]
 class Login extends Component
 {
     /** @var string */
@@ -37,6 +39,6 @@ class Login extends Component
 
     public function render(): View
     {
-        return view('livewire.auth.login')->extends('layouts.auth');
+        return view('livewire.auth.login');
     }
 }

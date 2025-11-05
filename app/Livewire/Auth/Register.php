@@ -4,12 +4,12 @@ namespace App\Livewire\Auth;
 
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Teamsy | Create a new account')]
 class Register extends Component
 {
     /** @var string */
@@ -24,7 +24,7 @@ class Register extends Component
     /** @var string */
     public $passwordConfirmation = '';
 
-    public function register(): RedirectResponse
+    public function register(): void
     {
         $this->validate([
             'name'     => ['required'],
@@ -35,18 +35,18 @@ class Register extends Component
         $user = User::create([
             'email'    => $this->email,
             'name'     => $this->name,
-            'password' => Hash::make($this->password),
+            'password' => $this->password,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user, true);
 
-        return redirect()->intended(route('home'));
+        $this->redirectIntended(route('home'));
     }
 
     public function render(): View
     {
-        return view('livewire.auth.register')->extends('layouts.auth');
+        return view('livewire.auth.register');
     }
 }

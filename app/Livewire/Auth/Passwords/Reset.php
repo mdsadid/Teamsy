@@ -6,12 +6,13 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Teamsy | Reset password')]
 class Reset extends Component
 {
     /** @var string */
@@ -32,7 +33,7 @@ class Reset extends Component
         $this->token = $token;
     }
 
-    public function resetPassword()
+    public function resetPassword(): void
     {
         $this->validate([
             'token'    => 'required',
@@ -47,7 +48,7 @@ class Reset extends Component
                 'password' => $this->password
             ],
             function ($user, $password) {
-                $user->password = Hash::make($password);
+                $user->password = $password;
 
                 $user->setRememberToken(Str::random(60));
 
@@ -62,7 +63,7 @@ class Reset extends Component
         if ($response == Password::PASSWORD_RESET) {
             session()->flash(trans($response));
 
-            return redirect(route('home'));
+            $this->redirect(route('home'));
         }
 
         $this->addError('email', trans($response));
@@ -90,6 +91,6 @@ class Reset extends Component
 
     public function render(): View
     {
-        return view('livewire.auth.passwords.reset')->extends('layouts.auth');
+        return view('livewire.auth.passwords.reset');
     }
 }
